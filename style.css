@@ -1043,6 +1043,19 @@ ul { padding: 0; list-style: none; }
 .u-muted { color: var(--text-muted); }
 .u-center { text-align: center; }
 
+/* ---------- Mobile robustness: 사용자 입력(약 이름/병원명 등)이 비정상적으로 길 때
+   flex 레이아웃이 깨지지 않도록 하는 방어 규칙 (평소 길이 텍스트에는 시각적 변화 없음) ---------- */
+.spotlight-row__name,
+.antibiotic-mini-row__name,
+.compare-card__name,
+.med-row__name,
+.episode-item__title,
+.flow-teaser__text,
+.mini-list-item__main {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 @media (min-width: 481px) {
   body { background: #EEE7D8; }
   .app { min-height: 100vh; margin-top: 0; }

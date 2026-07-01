@@ -285,9 +285,19 @@
         }
       }
 
-      var discCandidates = discontinuations.filter(function (d) { return (d.medName || "").trim() === pMed; })
-        .sort(function (a, b) { return a.date < b.date ? 1 : -1; });
-      var disc = discCandidates.length ? discCandidates[0] : null;
+      var discCandidates = discontinuations.filter(function (d) {
+        return (d.medName || "").trim() === pMed && d.date >= p.date;
+      });
+      var disc = null;
+      // 중단 사유는 "이 처방 회차의 실제 복용"이 실제로 중단 상태일 때만 연결한다.
+      // (같은 약을 재처방받은 경우, 다른 회차의 중단 사유가 잘못 표시되는 것을 방지)
+      if (matched && matched.status === "중단" && discCandidates.length) {
+        var targetDate = matched.endDate || matched.startDate;
+        discCandidates.sort(function (a, b) {
+          return Math.abs(daysBetween(targetDate, a.date)) - Math.abs(daysBetween(targetDate, b.date));
+        });
+        disc = discCandidates[0];
+      }
 
       return { prescription: p, intake: matched, actualDays: actualDays, ongoing: ongoing, discontinuation: disc };
     });
