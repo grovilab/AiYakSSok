@@ -530,7 +530,7 @@
             '<button type="button" class="btn btn-ghost" data-action="sample">' + ICONS.seedling + ' 샘플로 둘러보기</button>' +
           '</div>' +
         '</div>' +
-        renderFooterNote()
+        homeFooterNote()
       );
     }
 
@@ -541,65 +541,90 @@
 
     var html = "";
 
-    // 1) 오늘의 브리핑 — 대시보드의 시작점
-    //    기록 추가 진입은 별도 섹션 대신 브리핑 카드 안의 작은 링크로만 유지 (하단 탭바에도 존재)
-    html += '<div class="briefing-card">' +
+    // 1) 상태 헤더 — headline 한 문장만 (sub·지표 제거, 기록 추가 링크 유지)
+    html += '<div class="briefing-card briefing-card--slim">' +
       '<div class="briefing-card__top">' +
         '<div class="briefing-card__eyebrow">' + ICONS.sparkle + ' ' + (child.name ? escapeHtml(child.name) : "우리 아이") + (ageString(child.birthDate) ? " · " + ageString(child.birthDate) : "") + '</div>' +
         '<button type="button" class="briefing-card__addlink" data-action="go-add">' + ICONS.plus + ' 기록 추가</button>' +
       '</div>' +
-      '<div class="briefing-card__headline">' + escapeHtml(briefing.headline) + '</div>' +
-      '<div class="briefing-card__sub">' + escapeHtml(briefing.sub) + '</div>' +
-      '<div class="briefing-card__meta">' +
-        '<div class="briefing-meta-item"><span class="briefing-meta-item__num">' + getRecords("hospital").length + '</span><span class="briefing-meta-item__label">병원 방문</span></div>' +
-        '<div class="briefing-meta-item"><span class="briefing-meta-item__num">' + getRecords("prescription").length + '</span><span class="briefing-meta-item__label">처방</span></div>' +
-        '<div class="briefing-meta-item"><span class="briefing-meta-item__num">' + ongoingIntakes.length + '</span><span class="briefing-meta-item__label">복용중</span></div>' +
-      '</div>' +
+      '<div class="briefing-card__headline briefing-card__headline--slim">' + escapeHtml(briefing.headline) + '</div>' +
     '</div>';
 
-    // 2) 현재 복용 중인 약 — 상태 카드 (진행률·상태 badge 포함)
-    html += '<div class="screen-section">' +
-      '<div class="screen-section__head"><span class="screen-section__title">현재 복용 중인 약</span></div>';
+    // 2) 지금 복용 중 — 약당 1행 (이름 / n일차·총 일수 / 남은 일수 / 진행선)
+    html += '<div class="screen-section screen-section--tight">' +
+      '<div class="screen-section__head"><span class="screen-section__title">지금 복용 중</span></div>';
     if (ongoingIntakes.length === 0) {
-      html += '<div class="card u-muted" style="font-size:12.5px;">현재 복용 중으로 등록된 약이 없어요.</div>';
+      html += '<div class="card u-muted" style="font-size:12.5px;">복용 중인 약이 없어요.</div>';
     } else {
-      html += '<div class="med-status-list">' + ongoingIntakes.map(function (i) {
-        return medStatusCardHtml(i, summaries);
+      html += '<div class="med-home-list">' + ongoingIntakes.map(function (i) {
+        return medHomeRowHtml(i, summaries);
       }).join("") + '</div>';
     }
     html += '</div>';
 
-    // 3) 최근 진료/처방 흐름 — 기록 나열이 아니라 에피소드 단위 요약 (buildEpisodes 결과 표시 전용)
-    var recentEpisodes = buildEpisodes(records).slice(0, 2);
-    if (recentEpisodes.length > 0) {
-      html += '<div class="screen-section">' +
-        '<div class="screen-section__head"><span class="screen-section__title">최근 진료 흐름</span>' +
-        '<button type="button" class="screen-section__link" data-action="go-timeline">전체 타임라인 ' + ICONS.arrowRight + '</button></div>' +
-        recentEpisodes.map(function (ep) { return homeEpisodeTeaserHtml(ep); }).join("") +
+    // 3) 최근 진료 — 가장 최근 병원 방문 1건만 (전체 흐름은 타임라인에서)
+    var latestHospital = sortByDateDesc(getRecords("hospital"))[0];
+    if (latestHospital) {
+      html += '<div class="screen-section screen-section--tight">' +
+        '<div class="screen-section__head"><span class="screen-section__title">최근 진료</span></div>' +
+        '<button type="button" class="status-row" data-action="go-timeline">' +
+          '<span class="status-row__body">' +
+            '<span class="status-row__main">' + escapeHtml(latestHospital.hospitalName) + ' · ' + escapeHtml(latestHospital.diagnosis) + '</span>' +
+            '<span class="status-row__sub">' + relativeDaysAgo(latestHospital.date) + '</span>' +
+          '</span>' +
+          '<span class="status-row__chevron">' + ICONS.chevronRight + '</span>' +
+        '</button>' +
       '</div>';
     }
 
-    // 4) 항생제 이력 (있을 때만, 별도 강조)
+    // 4) 항생제 — 1행 요약, 이력 없으면 숨김 (상세는 진료요약에서)
     if (antibiotics.length > 0) {
-      html += '<div class="spotlight-card">' +
-        '<div class="spotlight-card__label">' + ICONS.shield + ' 항생제 이력</div>' +
-        '<div class="spotlight-card__title">항생제 처방 기록 ' + antibiotics.length + '건이 있어요</div>' +
-        '<div class="spotlight-card__desc">처방 기간과 실제 복용 기간을 진료 요약에서 비교해 볼 수 있어요.</div>' +
-        '<div class="spotlight-list">' + antibiotics.slice(0, 2).map(function (s) {
-          var metaText = s.actualDays === null ? "복용 기록 없음" : (s.ongoing ? "복용 " + s.actualDays + "일째" : "실제 " + s.actualDays + "일 / 처방 " + s.prescription.prescribedDays + "일");
-          return '<button type="button" class="spotlight-row" data-action="open-detail" data-id="' + s.prescription.id + '">' +
-            '<span class="spotlight-row__name">' + escapeHtml(s.prescription.medName) + '</span>' +
-            '<span class="spotlight-row__meta">' + metaText + '</span>' +
-          '</button>';
-        }).join("") + '</div>' +
-      '</div>';
+      var latestAnti = antibiotics[0];
+      html += '<button type="button" class="status-row status-row--antibiotic" data-action="go-summary">' +
+        '<span class="status-row__dot"></span>' +
+        '<span class="status-row__body">' +
+          '<span class="status-row__main">최근 항생제 처방 ' + antibiotics.length + '건</span>' +
+          '<span class="status-row__sub">' + escapeHtml(latestAnti.prescription.medName) + ' · ' + relativeDaysAgo(latestAnti.prescription.date) + '</span>' +
+        '</span>' +
+        '<span class="status-row__chevron">' + ICONS.chevronRight + '</span>' +
+      '</button>';
     }
 
-    html += renderFooterNote();
+    html += homeFooterNote();
     return html;
   }
 
-  /* 홈/진료요약 공용: 복용 중 약 상태 카드 (표시 전용 — 기존 daysBetween/buildMedicationSummaries 재사용) */
+  /* 홈 전용: 복용 중 약 1행 (표시 전용 — 기존 daysBetween/buildMedicationSummaries 재사용) */
+  function medHomeRowHtml(i, summaries) {
+    var days = daysBetween(i.startDate, todayStr());
+    var matched = summaries.filter(function (s) { return s.intake && s.intake.id === i.id; })[0];
+    var countHtml, remainHtml = "", barHtml = "";
+    if (matched) {
+      var total = matched.prescription.prescribedDays;
+      var remaining = total - days;
+      var remainText = remaining > 0 ? remaining + "일 남음" : (remaining === 0 ? "오늘까지" : "처방 " + total + "일 지남");
+      var pct = Math.min((days / total) * 100, 100);
+      countHtml = '<span class="med-home-row__count">' + days + '일차 / ' + total + '일</span>';
+      remainHtml = '<span class="med-home-row__remain">' + remainText + '</span>';
+      barHtml = '<span class="med-home-row__bar"><span class="med-home-row__bar-fill" style="width:' + pct + '%"></span></span>';
+    } else {
+      countHtml = '<span class="med-home-row__count">' + days + '일차</span>';
+    }
+    return '<button type="button" class="med-home-row" data-action="open-detail" data-id="' + i.id + '">' +
+      '<span class="med-home-row__top">' +
+        '<span class="med-home-row__name">' + escapeHtml(i.medName) + '</span>' +
+        countHtml + remainHtml +
+      '</span>' +
+      barHtml +
+    '</button>';
+  }
+
+  /* 홈 전용 하단: 의료 안전 문구만 최소 크기로 (문구 내용은 변경 없음) */
+  function homeFooterNote() {
+    return '<p class="app-footer-note app-footer-note--min">' + escapeHtml(SAFETY_NOTICE_FULL) + '</p>';
+  }
+
+  /* 진료요약용: 복용 중 약 상태 카드 (dose·badge·시작일·횟수 유지 — 표시 전용) */
   function medStatusCardHtml(i, summaries) {
     var days = daysBetween(i.startDate, todayStr());
     var matched = summaries.filter(function (s) { return s.intake && s.intake.id === i.id; })[0];
@@ -624,29 +649,6 @@
       '</span>' +
       bodyHtml +
     '</button>';
-  }
-
-  /* 홈: 최근 진료 흐름을 에피소드 단위로 요약 (buildEpisodes 결과 표시 전용, 로직 무변경) */
-  function homeEpisodeTeaserHtml(ep) {
-    var dateLabel = ep.startDate === ep.endDate ? formatDate(ep.startDate) : formatDateShort(ep.startDate) + " ~ " + formatDateShort(ep.endDate);
-    var title = ep.hospital ? ep.hospital.diagnosis : "병원 방문 전 기록";
-    var subtitle = ep.hospital ? ep.hospital.hospitalName : "";
-    var recentItems = sortByDateDesc(ep.items).slice(0, 3);
-    return '<div class="epi-card' + (ep.hasAntibiotic ? " is-antibiotic" : "") + '">' +
-      '<div class="epi-card__head">' +
-        '<span class="epi-card__title">' + escapeHtml(title) + (subtitle ? ' <span class="epi-card__subtitle">· ' + escapeHtml(subtitle) + '</span>' : '') + '</span>' +
-        '<span class="badge badge-status ' + ep.statusClass + '">' + ep.statusLabel + '</span>' +
-      '</div>' +
-      '<div class="epi-card__date">' + dateLabel + (ep.hasAntibiotic ? ' · <span class="epi-card__anti">항생제 포함</span>' : '') + '</div>' +
-      '<div class="epi-card__rows">' + recentItems.map(function (r) {
-        var meta = TYPE_META[r.type];
-        return '<button type="button" class="epi-card__row" data-action="open-detail" data-id="' + r.id + '">' +
-          '<span class="epi-card__dot" style="background:' + meta.color + '"></span>' +
-          '<span class="epi-card__text">' + escapeHtml(narrativeLine(r)) + '</span>' +
-          '<span class="epi-card__when">' + relativeDaysAgo(r.date) + '</span>' +
-        '</button>';
-      }).join("") + '</div>' +
-    '</div>';
   }
 
   function renderFooterNote() {

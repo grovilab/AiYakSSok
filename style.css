@@ -1389,68 +1389,6 @@ input[type="date"]::-webkit-date-and-time-value {
   font-weight: 600;
 }
 
-/* ---------- 홈: 최근 진료 흐름 — 에피소드 요약 카드 ---------- */
-.epi-card {
-  background: var(--surface);
-  border-radius: var(--radius-l);
-  box-shadow: var(--shadow-s);
-  padding: 14px 16px 8px;
-  margin-bottom: 10px;
-}
-.epi-card.is-antibiotic { border-left: 4px solid var(--antibiotic); }
-.epi-card__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.epi-card__title {
-  min-width: 0;
-  font-size: 13.5px;
-  font-weight: 800;
-  color: var(--text);
-  overflow-wrap: anywhere;
-}
-.epi-card__subtitle { font-weight: 600; color: var(--text-muted); font-size: 12px; }
-.epi-card__date {
-  margin-top: 3px;
-  font-size: 11px;
-  color: var(--text-faint);
-  font-weight: 600;
-}
-.epi-card__anti { color: var(--antibiotic-dark); font-weight: 800; }
-.epi-card__rows { margin-top: 8px; }
-.epi-card__row {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
-  text-align: left;
-  padding: 9px 0;
-}
-.epi-card__row + .epi-card__row { border-top: 1px solid var(--border-soft); }
-.epi-card__dot {
-  flex: none;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-}
-.epi-card__text {
-  flex: 1;
-  min-width: 0;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1.45;
-  overflow-wrap: anywhere;
-}
-.epi-card__when {
-  flex: none;
-  font-size: 10.5px;
-  color: var(--text-faint);
-  font-weight: 700;
-}
-
 /* ---------- 타임라인: 에피소드 단계 스텝퍼 (표시 전용) ---------- */
 .episode-steps {
   display: flex;
@@ -1537,3 +1475,116 @@ input[type="date"]::-webkit-date-and-time-value {
   margin-bottom: 6px;
 }
 .app-footer .app-footer-note { margin-top: 0; }
+
+/* ---------- 홈 1스크린 재설계 (뷰 전용) ---------- */
+.briefing-card--slim { padding: 15px 18px 16px; margin-bottom: 12px; }
+.briefing-card--slim .briefing-card__eyebrow { margin-bottom: 8px; }
+.briefing-card__headline--slim { font-size: 16px; line-height: 1.45; }
+
+.screen-section--tight { margin-bottom: 16px; }
+.screen-section--tight .screen-section__head { margin-bottom: 8px; }
+
+/* 복용 중 약: 약당 1행 (이름 / n일차·총 / 남은 일수 / 진행선) */
+.med-home-list {
+  background: var(--surface);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-s);
+  overflow: hidden;
+}
+.med-home-row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  text-align: left;
+  padding: 13px 16px 12px;
+}
+.med-home-row + .med-home-row { border-top: 1px solid var(--border-soft); }
+.med-home-row:active { background: var(--surface-2); }
+.med-home-row__top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.med-home-row__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.med-home-row__count {
+  flex: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.med-home-row__remain {
+  flex: none;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--intake);
+}
+.med-home-row__bar {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.med-home-row__bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--intake);
+}
+
+/* 최근 진료 / 항생제: 1행 상태 요약 */
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-s);
+  padding: 12px 14px 12px 16px;
+}
+.status-row:active { background: var(--surface-2); }
+.status-row--antibiotic { margin-bottom: 16px; }
+.status-row__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--antibiotic);
+}
+.status-row__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.status-row__main {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.status-row__sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+.status-row__chevron { flex: none; color: var(--text-faint); }
+
+/* 홈 하단 안전 문구: 최소 크기 (문구 내용 무변경) */
+.app-footer-note--min {
+  font-size: 10px;
+  line-height: 1.55;
+  margin-top: 4px;
+}
