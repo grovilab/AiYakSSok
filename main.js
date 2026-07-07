@@ -517,10 +517,11 @@
 
     if (records.length === 0) {
       return (
-        '<div class="briefing-card">' +
-          '<div class="briefing-card__eyebrow">' + ICONS.sparkle + ' 아이약쏙</div>' +
-          '<div class="briefing-card__headline">' + (child.name ? escapeHtml(child.name) + "의 " : "아이의 ") + '진료 기억과 복약 흐름을<br>차분히 정리해 드려요</div>' +
-          '<div class="briefing-card__sub">병원 방문, 처방, 실제 복용 기록을 남기면 진료 흐름과 처방 기간·실제 복용 기간의 차이를 자동으로 정리해 드려요.</div>' +
+        '<div class="hero-card">' +
+          '<div class="hero-card__top">' +
+            '<div class="hero-card__eyebrow">' + ICONS.sparkle + ' 아이약쏙</div>' +
+          '</div>' +
+          '<div class="hero-card__headline">' + (child.name ? escapeHtml(child.name) + "의 " : "아이의 ") + '진료 기억과 복약 흐름을<br>차분히 정리해 드려요</div>' +
         '</div>' +
         '<div class="empty">' +
           '<div class="empty__icon">' + ICONS.box + '</div>' +
@@ -542,43 +543,60 @@
 
     var html = "";
 
-    // 1) 상태 헤더 — headline 한 문장만 (sub·지표 제거, 기록 추가 링크 유지)
-    html += '<div class="briefing-card briefing-card--slim">' +
-      '<div class="briefing-card__top">' +
-        '<div class="briefing-card__eyebrow">' + ICONS.sparkle + ' ' + (child.name ? escapeHtml(child.name) : "우리 아이") + (ageString(child.birthDate) ? " · " + ageString(child.birthDate) : "") + '</div>' +
-        '<button type="button" class="briefing-card__addlink" data-action="go-add">' + ICONS.plus + ' 기록 추가</button>' +
+    // 1) HERO CARD — 아이 정보 + 브리핑 헤드라인 + 복용 상태 인셋을 하나의 대표 카드로
+    html += '<div class="hero-card">' +
+      '<div class="hero-card__top">' +
+        '<div class="hero-card__eyebrow">' + ICONS.sparkle + ' ' + (child.name ? escapeHtml(child.name) : "우리 아이") + (ageString(child.birthDate) ? " · " + ageString(child.birthDate) : "") + '</div>' +
+        '<button type="button" class="hero-card__addlink" data-action="go-add">' + ICONS.plus + ' 기록</button>' +
       '</div>' +
-      '<div class="briefing-card__headline briefing-card__headline--slim">' + escapeHtml(briefing.headline) + '</div>' +
-    '</div>';
-
-    // 2) 지금 복용 중 — 약당 1행 (이름 / n일차·총 일수 / 남은 일수 / 진행선)
-    html += '<div class="screen-section screen-section--tight">' +
-      '<div class="screen-section__head"><span class="screen-section__title">지금 복용 중</span></div>';
+      '<div class="hero-card__headline">' + escapeHtml(briefing.headline) + '</div>';
     if (ongoingIntakes.length === 0) {
-      html += '<div class="card u-muted" style="font-size:12.5px;">복용 중인 약이 없어요.</div>';
+      html += '<div class="hero-card__none">복용 중인 약이 없어요.</div>';
     } else {
-      html += '<div class="med-home-list">' + ongoingIntakes.map(function (i) {
-        return medHomeRowHtml(i, summaries);
-      }).join("") + '</div>';
+      var shownMeds = ongoingIntakes.slice(0, 2);
+      var extraMeds = ongoingIntakes.length - shownMeds.length;
+      html += '<div class="hero-card__meds">' +
+        shownMeds.map(function (i) { return heroMedInsetHtml(i, summaries); }).join("") +
+        (extraMeds > 0 ? '<button type="button" class="hero-card__more" data-action="go-summary">외 ' + extraMeds + '개 · 진료요약에서 보기 ' + ICONS.arrowRight + '</button>' : "") +
+      '</div>';
     }
     html += '</div>';
 
-    // 3) 최근 진료 — 가장 최근 병원 방문 1건만 (전체 흐름은 타임라인에서)
-    var latestHospital = sortByDateDesc(getRecords("hospital"))[0];
-    if (latestHospital) {
+    // 2) 최근 흐름 — 최신 진료 에피소드 1건을 시간 오름차순으로 (buildEpisodes 읽기 전용, 로직 무변경)
+    var latestEp = buildEpisodes(records)[0];
+    if (latestEp) {
+      var itemsAsc = sortByDateAsc(latestEp.items);
+      var extraItems = Math.max(itemsAsc.length - 4, 0);
+      var shownItems = extraItems > 0 ? itemsAsc.slice(itemsAsc.length - 4) : itemsAsc;
+      var flowTitle = latestEp.hospital
+        ? escapeHtml(latestEp.hospital.diagnosis) + ' · ' + escapeHtml(latestEp.hospital.hospitalName)
+        : '최근 기록';
+      var flowDate = relativeDaysAgo(latestEp.hospital ? latestEp.hospital.date : latestEp.startDate);
+
       html += '<div class="screen-section screen-section--tight">' +
-        '<div class="screen-section__head"><span class="screen-section__title">최근 진료</span></div>' +
-        '<button type="button" class="status-row" data-action="go-timeline">' +
-          '<span class="status-row__body">' +
-            '<span class="status-row__main">' + escapeHtml(latestHospital.hospitalName) + ' · ' + escapeHtml(latestHospital.diagnosis) + '</span>' +
-            '<span class="status-row__sub">' + relativeDaysAgo(latestHospital.date) + '</span>' +
-          '</span>' +
-          '<span class="status-row__chevron">' + ICONS.chevronRight + '</span>' +
-        '</button>' +
+        '<div class="screen-section__head"><span class="screen-section__title">최근 흐름</span>' +
+        '<button type="button" class="screen-section__link" data-action="go-timeline">전체 타임라인 ' + ICONS.arrowRight + '</button></div>' +
+        '<div class="flow-card">' +
+          '<button type="button" class="flow-card__head" data-action="go-timeline">' +
+            '<span class="flow-card__title">' + flowTitle + '</span>' +
+            '<span class="flow-card__date">' + flowDate + '</span>' +
+          '</button>' +
+          '<div class="flow-card__items">' +
+            (extraItems > 0 ? '<button type="button" class="flow-card__prev" data-action="go-timeline">이전 기록 ' + extraItems + '건 · 타임라인에서 보기</button>' : "") +
+            shownItems.map(function (r) {
+              var meta = TYPE_META[r.type];
+              return '<button type="button" class="flow-card__item" data-action="open-detail" data-id="' + r.id + '">' +
+                '<span class="flow-card__dot" style="background:' + meta.color + '"></span>' +
+                '<span class="flow-card__text">' + escapeHtml(narrativeLine(r)) + '</span>' +
+                '<span class="flow-card__when">' + relativeDaysAgo(r.date) + '</span>' +
+              '</button>';
+            }).join("") +
+          '</div>' +
+        '</div>' +
       '</div>';
     }
 
-    // 4) 항생제 — 1행 요약, 이력 없으면 숨김 (상세는 진료요약에서)
+    // 3) 항생제 — 1행 요약, 이력 없으면 숨김 (상세는 진료요약에서)
     if (antibiotics.length > 0) {
       var latestAnti = antibiotics[0];
       html += '<button type="button" class="status-row status-row--antibiotic" data-action="go-summary">' +
@@ -595,10 +613,11 @@
     return html;
   }
 
-  /* 홈 전용: 복용 중 약 1행 (표시 전용 — 기존 daysBetween/buildMedicationSummaries 재사용)
-     경과일이 처방 일수를 초과하면 홈 표시만 "기간 지남 · 확인 필요"로 전환한다.
-     record의 status 값·데이터는 절대 변경하지 않으며, 진행바는 100%에서 멈춘다. */
-  function medHomeRowHtml(i, summaries) {
+  /* HERO 내부: 복용 중 약 인셋 (표시 전용 — 기존 daysBetween/buildMedicationSummaries 재사용)
+     기간 지남 표시 로직은 기존 그대로: 경과일 > prescribedDays이면 표시만
+     "기간 지남 · 확인 필요"로 전환하고 진행바는 100%에서 멈춘다.
+     record의 status 값·데이터는 절대 변경하지 않는다. */
+  function heroMedInsetHtml(i, summaries) {
     var days = daysBetween(i.startDate, todayStr());
     var matched = summaries.filter(function (s) { return s.intake && s.intake.id === i.id; })[0];
     var countHtml, statusHtml = "", barHtml = "", overdue = false;
@@ -606,23 +625,23 @@
       var total = matched.prescription.prescribedDays;
       overdue = days > total;
       if (overdue) {
-        countHtml = '<span class="med-home-row__count">처방 ' + total + '일</span>';
-        statusHtml = '<span class="med-home-row__status"><span class="med-home-row__pill med-home-row__pill--overdue">기간 지남 · 확인 필요</span><span class="med-home-row__hint">상세에서 복용 상태를 정리할 수 있어요</span></span>';
-        barHtml = '<span class="med-home-row__bar"><span class="med-home-row__bar-fill med-home-row__bar-fill--overdue" style="width:100%"></span></span>';
+        countHtml = '<span class="hero-med__count">처방 ' + total + '일</span>';
+        statusHtml = '<span class="hero-med__status"><span class="hero-med__pill hero-med__pill--overdue">기간 지남 · 확인 필요</span><span class="hero-med__hint">상세에서 복용 상태를 정리할 수 있어요</span></span>';
+        barHtml = '<span class="hero-med__bar"><span class="hero-med__bar-fill hero-med__bar-fill--overdue" style="width:100%"></span></span>';
       } else {
         var remaining = total - days;
         var remainText = remaining > 0 ? remaining + "일 남음" : "오늘까지";
-        countHtml = '<span class="med-home-row__count">' + days + '일차 / ' + total + '일</span>' +
-          '<span class="med-home-row__pill">' + remainText + '</span>';
+        countHtml = '<span class="hero-med__count">' + days + '일차 · 처방 ' + total + '일</span>' +
+          '<span class="hero-med__pill">' + remainText + '</span>';
         var pct = Math.min((days / total) * 100, 100);
-        barHtml = '<span class="med-home-row__bar"><span class="med-home-row__bar-fill" style="width:' + pct + '%"></span></span>';
+        barHtml = '<span class="hero-med__bar"><span class="hero-med__bar-fill" style="width:' + pct + '%"></span></span>';
       }
     } else {
-      countHtml = '<span class="med-home-row__count">' + days + '일차</span>';
+      countHtml = '<span class="hero-med__count">' + days + '일차</span>';
     }
-    return '<button type="button" class="med-home-row' + (overdue ? " med-home-row--overdue" : "") + '" data-action="open-detail" data-id="' + i.id + '">' +
-      '<span class="med-home-row__top">' +
-        '<span class="med-home-row__name">' + escapeHtml(i.medName) + '</span>' +
+    return '<button type="button" class="hero-med' + (overdue ? " hero-med--overdue" : "") + '" data-action="open-detail" data-id="' + i.id + '">' +
+      '<span class="hero-med__top">' +
+        '<span class="hero-med__name">' + escapeHtml(i.medName) + '</span>' +
         countHtml +
       '</span>' +
       statusHtml +

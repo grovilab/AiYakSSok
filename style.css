@@ -1476,117 +1476,252 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 .app-footer .app-footer-note { margin-top: 0; }
 
-/* ---------- 홈 1스크린 재설계 (뷰 전용) ---------- */
-/* 홈 배경 여백: 블록 간 호흡을 넓혀 대시보드 밀도 확보 */
+/* ==========================================================================
+   홈 Hero Card 재설계 (뷰 전용 — 기존 클래스·보정 블록은 수정하지 않고 추가만 함)
+   위계: Hero(강, 틴트) → 흐름 카드(약, 흰색) → 항생제 행(포인트) → 문구(최소)
+   ========================================================================== */
 .screen--home { padding-top: 22px; }
 .screen--home .screen-section--tight { margin-bottom: 18px; }
-
-/* 브리핑 카드: 약한 강조감 (틴트 배경 + 헤어라인, 장식 없음) */
-.briefing-card--slim {
-  padding: 16px 18px 17px;
-  margin-bottom: 18px;
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
-  box-shadow: var(--shadow-m);
-}
-.briefing-card--slim .briefing-card__eyebrow {
-  margin-bottom: 9px;
-  padding: 4px 9px;
-  margin-left: -2px;
-  border-radius: 999px;
-  background: var(--primary-light);
-  color: var(--primary-dark);
-  width: fit-content;
-}
-.briefing-card__headline--slim { font-size: 16.5px; line-height: 1.45; }
-
 .screen-section--tight { margin-bottom: 16px; }
 .screen-section--tight .screen-section__head { margin-bottom: 8px; }
 
-/* 복용 중 약: 약당 1행 (이름 / n일차·총 / 상태 pill / 진행선) */
-.med-home-list {
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-l);
-  box-shadow: var(--shadow-s);
-  overflow: hidden;
+/* ---------- ① HERO CARD: 홈의 대표 카드 (연한 teal 틴트) ---------- */
+.hero-card {
+  border-radius: var(--radius-xl);
+  padding: 20px 20px 18px;
+  background: var(--primary-light);
+  border: 1px solid rgba(47, 111, 104, 0.14);
+  box-shadow: var(--shadow-m);
+  margin-bottom: 22px;
 }
-.med-home-row {
+.hero-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.hero-card__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--primary-dark);
+}
+.hero-card__addlink {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--primary-dark);
+}
+.hero-card__addlink svg { width: 13px; height: 13px; }
+.hero-card__addlink:active { background: #FFFFFF; }
+.hero-card__headline {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.42;
+  letter-spacing: -0.015em;
+  color: var(--primary-dark);
+}
+.hero-card__none {
+  margin-top: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  opacity: 0.75;
+}
+
+/* HERO 내부: 복용 상태 인셋 (흰색) */
+.hero-card__meds {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hero-med {
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 100%;
   text-align: left;
-  padding: 14px 16px 13px;
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 13px 14px 12px;
+  box-shadow: 0 1px 4px rgba(32, 78, 73, 0.06);
 }
-.med-home-row + .med-home-row { border-top: 1px solid var(--border-soft); }
-.med-home-row:active { background: var(--surface-2); }
-.med-home-row--overdue { background: var(--warning-light); }
-.med-home-row--overdue:active { background: var(--warning-light); filter: brightness(0.97); }
-.med-home-row__top {
+.hero-med:active { background: var(--surface-2); }
+.hero-med--overdue { background: var(--warning-light); }
+.hero-med--overdue:active { filter: brightness(0.97); }
+.hero-med__top {
   display: flex;
   align-items: baseline;
   gap: 8px;
   min-width: 0;
 }
-.med-home-row__name {
+.hero-med__name {
   flex: 1;
   min-width: 0;
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 800;
   color: var(--text);
   overflow-wrap: anywhere;
 }
-.med-home-row__count {
+.hero-med__count {
   flex: none;
   font-size: 12px;
   font-weight: 700;
   color: var(--text-muted);
 }
-/* 상태 문구: pill로 또렷하게 */
-.med-home-row__pill {
+.hero-med__pill {
   flex: none;
   font-size: 11px;
   font-weight: 800;
-  color: var(--intake);
+  color: var(--primary-dark);
   background: var(--intake-light);
   border-radius: 999px;
   padding: 3px 9px;
 }
-.med-home-row__pill--overdue {
+.hero-med__pill--overdue {
   color: var(--warning);
-  background: var(--surface);
+  background: #FFFFFF;
   border: 1px solid rgba(201, 138, 34, 0.35);
 }
-.med-home-row__status {
+.hero-med__status {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
   flex-wrap: wrap;
 }
-.med-home-row__hint {
+.hero-med__hint {
   font-size: 10.5px;
   font-weight: 600;
   color: var(--text-muted);
 }
-.med-home-row__bar {
+.hero-med__bar {
   display: block;
-  height: 4px;
+  height: 6px;
   border-radius: 999px;
-  background: var(--surface-2);
+  background: var(--primary-light);
   overflow: hidden;
 }
-.med-home-row--overdue .med-home-row__bar { background: rgba(43, 42, 37, 0.07); }
-.med-home-row__bar-fill {
+.hero-med--overdue .hero-med__bar { background: rgba(43, 42, 37, 0.08); }
+.hero-med__bar-fill {
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: var(--intake);
+  background: var(--primary);
 }
-.med-home-row__bar-fill--overdue { background: var(--warning); }
+.hero-med__bar-fill--overdue { background: var(--warning); }
+.hero-card__more {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 0 2px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--primary-dark);
+}
 
-/* 최근 진료 / 항생제: 1행 상태 요약 — 카드감 유지, 장식 최소 */
+/* ---------- ② 최근 흐름 카드: 최신 에피소드 1건 (조용한 흰색) ---------- */
+.flow-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-s);
+  overflow: hidden;
+}
+.flow-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.flow-card__head:active { background: var(--surface-2); }
+.flow-card__title {
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.flow-card__date {
+  flex: none;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-faint);
+}
+.flow-card__items {
+  position: relative;
+  padding: 8px 16px 10px 16px;
+}
+.flow-card__items::before {
+  content: "";
+  position: absolute;
+  left: 21px;
+  top: 14px;
+  bottom: 16px;
+  width: 1.5px;
+  background: var(--border);
+}
+.flow-card__item {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 0;
+}
+.flow-card__item:active { background: var(--surface-2); }
+.flow-card__dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  align-self: center;
+  box-shadow: 0 0 0 2.5px var(--surface);
+  z-index: 1;
+}
+.flow-card__text {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.flow-card__when {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-faint);
+}
+.flow-card__prev {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 0 6px 21px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* ---------- ③ 항생제: 1행 상태 요약 (포인트) ---------- */
 .status-row {
   display: flex;
   align-items: center;
@@ -1628,7 +1763,7 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 .status-row__chevron { flex: none; color: var(--text-faint); }
 
-/* 홈 하단 안전 문구: 최소 크기 (문구 내용 무변경) */
+/* ---------- ④ 홈 하단 안전 문구: 최소 크기 (문구 내용 무변경) ---------- */
 .app-footer-note--min {
   font-size: 10px;
   line-height: 1.55;
