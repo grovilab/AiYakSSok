@@ -1485,30 +1485,36 @@ input[type="date"]::-webkit-date-and-time-value {
 .screen-section--tight { margin-bottom: 16px; }
 .screen-section--tight .screen-section__head { margin-bottom: 8px; }
 
-/* ---------- ① HERO CARD: 홈의 대표 카드 (연한 teal 틴트) ---------- */
+/* ---------- ① HERO CARD: 대표 카드 (연한 teal 틴트) ---------- */
 .hero-card {
   border-radius: var(--radius-xl);
   padding: 20px 20px 18px;
   background: var(--primary-light);
-  border: 1px solid rgba(47, 111, 104, 0.14);
+  border: 1px solid rgba(47, 111, 104, 0.16);
   box-shadow: var(--shadow-m);
   margin-bottom: 22px;
 }
 .hero-card__top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
-.hero-card__eyebrow {
-  display: flex;
+/* 아이 정보: Hero의 시작점 — 흰색 칩으로 분명하게 */
+.hero-card__child {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11.5px;
+  padding: 6px 12px 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 12.5px;
   font-weight: 800;
   color: var(--primary-dark);
+  letter-spacing: -0.01em;
 }
+.hero-card__child svg { width: 13px; height: 13px; }
 .hero-card__addlink {
   flex: none;
   display: inline-flex;
@@ -1516,19 +1522,21 @@ input[type="date"]::-webkit-date-and-time-value {
   gap: 3px;
   padding: 6px 11px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.75);
+  background: transparent;
+  border: 1px solid rgba(32, 78, 73, 0.28);
   font-size: 11.5px;
   font-weight: 800;
   color: var(--primary-dark);
 }
 .hero-card__addlink svg { width: 13px; height: 13px; }
-.hero-card__addlink:active { background: #FFFFFF; }
+.hero-card__addlink:active { background: rgba(255,255,255,0.6); }
 .hero-card__headline {
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 800;
-  line-height: 1.42;
-  letter-spacing: -0.015em;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
   color: var(--primary-dark);
+  word-break: keep-all;
 }
 .hero-card__none {
   margin-top: 12px;
@@ -1538,81 +1546,68 @@ input[type="date"]::-webkit-date-and-time-value {
   opacity: 0.75;
 }
 
-/* HERO 내부: 복용 상태 인셋 (흰색) */
+/* HERO 내부 복용 인셋: 항상 흰색 — Hero의 핵심 상태 블록
+   우선순위: 약 이름 → 기간 → 남음/확인필요 pill → 진행바 */
 .hero-card__meds {
-  margin-top: 14px;
+  margin-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
 }
 .hero-med {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
   width: 100%;
   text-align: left;
   background: #FFFFFF;
-  border-radius: 14px;
-  padding: 13px 14px 12px;
-  box-shadow: 0 1px 4px rgba(32, 78, 73, 0.06);
+  border-radius: 16px;
+  padding: 14px 15px 13px;
+  box-shadow: 0 2px 8px rgba(32, 78, 73, 0.08);
 }
-.hero-med:active { background: var(--surface-2); }
-.hero-med--overdue { background: var(--warning-light); }
-.hero-med--overdue:active { filter: brightness(0.97); }
+.hero-med:active { filter: brightness(0.97); }
 .hero-med__top {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
   min-width: 0;
 }
 .hero-med__name {
   flex: 1;
   min-width: 0;
-  font-size: 14.5px;
+  font-size: 15.5px;
   font-weight: 800;
   color: var(--text);
+  letter-spacing: -0.01em;
   overflow-wrap: anywhere;
-}
-.hero-med__count {
-  flex: none;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-muted);
 }
 .hero-med__pill {
   flex: none;
   font-size: 11px;
   font-weight: 800;
   color: var(--primary-dark);
-  background: var(--intake-light);
+  background: var(--primary-light);
   border-radius: 999px;
-  padding: 3px 9px;
+  padding: 4px 10px;
 }
+/* 기간 지남: 인셋은 흰색 유지, pill·진행바만 warning */
 .hero-med__pill--overdue {
   color: var(--warning);
-  background: #FFFFFF;
-  border: 1px solid rgba(201, 138, 34, 0.35);
+  background: var(--warning-light);
 }
-.hero-med__status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex-wrap: wrap;
-}
-.hero-med__hint {
-  font-size: 10.5px;
-  font-weight: 600;
+.hero-med__count {
+  font-size: 12px;
+  font-weight: 700;
   color: var(--text-muted);
 }
 .hero-med__bar {
   display: block;
-  height: 6px;
+  height: 9px;
   border-radius: 999px;
-  background: var(--primary-light);
+  background: var(--surface-2);
   overflow: hidden;
 }
-.hero-med--overdue .hero-med__bar { background: rgba(43, 42, 37, 0.08); }
 .hero-med__bar-fill {
   display: block;
   height: 100%;
@@ -1620,6 +1615,11 @@ input[type="date"]::-webkit-date-and-time-value {
   background: var(--primary);
 }
 .hero-med__bar-fill--overdue { background: var(--warning); }
+.hero-med__hint {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
 .hero-card__more {
   width: 100%;
   display: inline-flex;

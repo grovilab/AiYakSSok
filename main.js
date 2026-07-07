@@ -543,13 +543,16 @@
 
     var html = "";
 
-    // 1) HERO CARD — 아이 정보 + 브리핑 헤드라인 + 복용 상태 인셋을 하나의 대표 카드로
+    // 1) HERO CARD — 아이 정보(강조) + 2줄 리듬 헤드라인 + 복용 상태 인셋
+    var childLabel = (child.name ? escapeHtml(child.name) : "우리 아이") + (ageString(child.birthDate) ? " · " + ageString(child.birthDate) : "");
+    // 표시 전용 줄바꿈: "…는 지금 / …" 2줄 리듬 (패턴 없으면 그대로)
+    var headlineHtml = escapeHtml(briefing.headline).replace(/(은|는) 지금 /, "$1 지금<br>");
     html += '<div class="hero-card">' +
       '<div class="hero-card__top">' +
-        '<div class="hero-card__eyebrow">' + ICONS.sparkle + ' ' + (child.name ? escapeHtml(child.name) : "우리 아이") + (ageString(child.birthDate) ? " · " + ageString(child.birthDate) : "") + '</div>' +
+        '<div class="hero-card__child">' + ICONS.sparkle + ' <span>' + childLabel + '</span></div>' +
         '<button type="button" class="hero-card__addlink" data-action="go-add">' + ICONS.plus + ' 기록</button>' +
       '</div>' +
-      '<div class="hero-card__headline">' + escapeHtml(briefing.headline) + '</div>';
+      '<div class="hero-card__headline">' + headlineHtml + '</div>';
     if (ongoingIntakes.length === 0) {
       html += '<div class="hero-card__none">복용 중인 약이 없어요.</div>';
     } else {
@@ -620,32 +623,34 @@
   function heroMedInsetHtml(i, summaries) {
     var days = daysBetween(i.startDate, todayStr());
     var matched = summaries.filter(function (s) { return s.intake && s.intake.id === i.id; })[0];
-    var countHtml, statusHtml = "", barHtml = "", overdue = false;
+    var pillHtml = "", countHtml, barHtml = "", hintHtml = "", overdue = false;
     if (matched) {
       var total = matched.prescription.prescribedDays;
-      overdue = days > total;
+      overdue = days > total; // 기간 지남 판정: 기존 로직 그대로
       if (overdue) {
         countHtml = '<span class="hero-med__count">처방 ' + total + '일</span>';
-        statusHtml = '<span class="hero-med__status"><span class="hero-med__pill hero-med__pill--overdue">기간 지남 · 확인 필요</span><span class="hero-med__hint">상세에서 복용 상태를 정리할 수 있어요</span></span>';
+        pillHtml = '<span class="hero-med__pill hero-med__pill--overdue">기간 지남 · 확인 필요</span>';
         barHtml = '<span class="hero-med__bar"><span class="hero-med__bar-fill hero-med__bar-fill--overdue" style="width:100%"></span></span>';
+        hintHtml = '<span class="hero-med__hint">상세에서 정리할 수 있어요</span>';
       } else {
         var remaining = total - days;
         var remainText = remaining > 0 ? remaining + "일 남음" : "오늘까지";
-        countHtml = '<span class="hero-med__count">' + days + '일차 · 처방 ' + total + '일</span>' +
-          '<span class="hero-med__pill">' + remainText + '</span>';
+        countHtml = '<span class="hero-med__count">복용 ' + days + '일차 / 처방 ' + total + '일</span>';
+        pillHtml = '<span class="hero-med__pill">' + remainText + '</span>';
         var pct = Math.min((days / total) * 100, 100);
         barHtml = '<span class="hero-med__bar"><span class="hero-med__bar-fill" style="width:' + pct + '%"></span></span>';
       }
     } else {
-      countHtml = '<span class="hero-med__count">' + days + '일차</span>';
+      countHtml = '<span class="hero-med__count">복용 ' + days + '일차</span>';
     }
     return '<button type="button" class="hero-med' + (overdue ? " hero-med--overdue" : "") + '" data-action="open-detail" data-id="' + i.id + '">' +
       '<span class="hero-med__top">' +
         '<span class="hero-med__name">' + escapeHtml(i.medName) + '</span>' +
-        countHtml +
+        pillHtml +
       '</span>' +
-      statusHtml +
+      countHtml +
       barHtml +
+      hintHtml +
     '</button>';
   }
 
