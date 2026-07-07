@@ -500,6 +500,7 @@
     document.getElementById("childBtnLabel").textContent = child.name ? child.name : "아이 정보";
 
     var root = document.getElementById("screenRoot");
+    root.className = "screen screen--" + state.screen; // 화면별 여백·배경 조정용 (표시 전용)
     if (state.screen === "home") { root.innerHTML = renderHome(); bindHome(); }
     else if (state.screen === "add") { root.innerHTML = renderAdd(); bindAdd(); }
     else if (state.screen === "timeline") { root.innerHTML = renderTimeline(); bindTimeline(); }
@@ -594,27 +595,37 @@
     return html;
   }
 
-  /* 홈 전용: 복용 중 약 1행 (표시 전용 — 기존 daysBetween/buildMedicationSummaries 재사용) */
+  /* 홈 전용: 복용 중 약 1행 (표시 전용 — 기존 daysBetween/buildMedicationSummaries 재사용)
+     경과일이 처방 일수를 초과하면 홈 표시만 "기간 지남 · 확인 필요"로 전환한다.
+     record의 status 값·데이터는 절대 변경하지 않으며, 진행바는 100%에서 멈춘다. */
   function medHomeRowHtml(i, summaries) {
     var days = daysBetween(i.startDate, todayStr());
     var matched = summaries.filter(function (s) { return s.intake && s.intake.id === i.id; })[0];
-    var countHtml, remainHtml = "", barHtml = "";
+    var countHtml, statusHtml = "", barHtml = "", overdue = false;
     if (matched) {
       var total = matched.prescription.prescribedDays;
-      var remaining = total - days;
-      var remainText = remaining > 0 ? remaining + "일 남음" : (remaining === 0 ? "오늘까지" : "처방 " + total + "일 지남");
-      var pct = Math.min((days / total) * 100, 100);
-      countHtml = '<span class="med-home-row__count">' + days + '일차 / ' + total + '일</span>';
-      remainHtml = '<span class="med-home-row__remain">' + remainText + '</span>';
-      barHtml = '<span class="med-home-row__bar"><span class="med-home-row__bar-fill" style="width:' + pct + '%"></span></span>';
+      overdue = days > total;
+      if (overdue) {
+        countHtml = '<span class="med-home-row__count">처방 ' + total + '일</span>';
+        statusHtml = '<span class="med-home-row__status"><span class="med-home-row__pill med-home-row__pill--overdue">기간 지남 · 확인 필요</span><span class="med-home-row__hint">상세에서 복용 상태를 정리할 수 있어요</span></span>';
+        barHtml = '<span class="med-home-row__bar"><span class="med-home-row__bar-fill med-home-row__bar-fill--overdue" style="width:100%"></span></span>';
+      } else {
+        var remaining = total - days;
+        var remainText = remaining > 0 ? remaining + "일 남음" : "오늘까지";
+        countHtml = '<span class="med-home-row__count">' + days + '일차 / ' + total + '일</span>' +
+          '<span class="med-home-row__pill">' + remainText + '</span>';
+        var pct = Math.min((days / total) * 100, 100);
+        barHtml = '<span class="med-home-row__bar"><span class="med-home-row__bar-fill" style="width:' + pct + '%"></span></span>';
+      }
     } else {
       countHtml = '<span class="med-home-row__count">' + days + '일차</span>';
     }
-    return '<button type="button" class="med-home-row" data-action="open-detail" data-id="' + i.id + '">' +
+    return '<button type="button" class="med-home-row' + (overdue ? " med-home-row--overdue" : "") + '" data-action="open-detail" data-id="' + i.id + '">' +
       '<span class="med-home-row__top">' +
         '<span class="med-home-row__name">' + escapeHtml(i.medName) + '</span>' +
-        countHtml + remainHtml +
+        countHtml +
       '</span>' +
+      statusHtml +
       barHtml +
     '</button>';
   }
